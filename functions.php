@@ -185,30 +185,37 @@
         $unit2 = "";
         $unit3 = "";
         
+        // e.g. Disk 1 of 2 Side A
         if(sscanf($str, "%s %s of %s %s %s", $media1, $unit1, $unit2, $media2, $unit3) == 5 && checkMedia($media1) && checkMedia($media2))
             return "$media1 $unit1 of $unit2 $media2 $unit3";
+        // e.g. Disk 1 of 2
         else if(sscanf($str, "%s %s of %s", $media1, $unit1, $unit2) == 3 && checkMedia($media1))
             return "$media1 $unit1 of $unit2";
+        // e.g. Side A
         else if(sscanf($str, "%s %s", $media1, $unit1) == 2 && checkMedia($media1))
             return "$media1 $unit1";
         else
             return "";
     }
     
+    // filter out characters which should not appear in the software list short names
     function validShortNameChar($char) {
         return (($char >= '0') && ($char <= '9')) || (($char >= 'a') && ($char <= 'z')) || ($char == '_');
     }
     
+    // filter out characters which appear in TOSEC filenames but are invalid in software lists
     function validFilenameChar($char) {
         $invalidChars = array('!', '$', '%', '/', ':', '\\');
         
         return (($char >= ' ') && ($char <= '~')) && !in_array($char, $invalidChars);
     }
     
+    // This is the maximum filename length at which the MAME validator is happy
     function MAX_FILENAME_LENGTH() {
         return 127;
     }
     
+    // List of strings within descriptions which must be rearranged
     function precedents() {
         return array("A", "a", "An", "Da", "Das", "De", "de", "Den", "Der", "Des", "Det", "Die", "Een", "El", "En", "Gli", "Het", "Il", "L", "La", "Las", "Le", "Les", "Lo", "Los", "L'", "Nel", "The", "the", "Une", "Uno");
     }
@@ -217,9 +224,14 @@
         $setsRead = 0;
         $headerRead = 0;
         
+        // iterate over each set
         foreach($dat->children() as $game) {
             $setName = "Set $setsRead";
             
+            // check if the set tag is valid
+            // if it is the first set, then it should be a header
+            // likewise, a "game" set should not be first
+            // this also prevents the header from appearing in, say, the middle of the datfile
             if($game->getName() != "game") {
                 if(!$headerRead && $game->getName() == "header") {
                     $headerRead = 1;
@@ -236,6 +248,7 @@
                 return 0;
             }
             
+            // check for set name attribute
             if(count($game->attributes()) != 1) {
                 echo "$setName: Invalid number of game attributes.<br>\n";
                 
@@ -254,11 +267,16 @@
             
             $gameChildStep = 0;
             
+            // check for subnodes
             foreach($game->children() as $gameChild) {
+                // first should be description
                 if($gameChildStep == 0 && $gameChild->getName() == "description") {
                     $gameChildStep++;
                 }
+                // second should be rom
                 else if($gameChildStep == 1 && $gameChild->getName() == "rom") {
+                    // there should be 5 rom attributes in the following order: name, size, crc, md5, sha1
+                    // todo: validate sizes and hashes more strictly
                     if(count($gameChild->attributes()) != 5) {
                         echo "$setName: Invalid number of ROM attributes.<br>\n";
                         
@@ -301,13 +319,15 @@
                         
                         if($romAttributeError) {
                             echo "$setName: Invalid ROM attribute $romAttributeName at position $romAttributeStep.<br>\n";
+                            
+                            return 0;
                         }
                         
                         $romAttributeStep++;
                     }
                 }
                 else {
-                    echo "$setName: Invalid set subtag " . $gameChild->getName() . "at position $gameChildStep.<br>\n";
+                    echo "$setName: Invalid set subnode tag " . $gameChild->getName() . "at position $gameChildStep.<br>\n";
                     
                     return 0;
                 }
@@ -319,24 +339,29 @@
         return 1;
     }
     
-    function makeList($list, $shortListName, $longListName, $part, $interface) {
+    function makeList($list, $shortListName, $longListName, $part, $interface, $mergeLevel) {
+        // make sure the requested TOSEC datfile actually exists
         if(!file_exists($list)) {
             echo "<h1 color=\"red\">Datfile $list does not exist.</h1>";
             return 0;
         }
      
+        // load the datfile if it was found
         $dat = simplexml_load_file($list) or die("<h1 color=\"red\">Error opening dat file $list.</h1>");
         
+        // validate the datfile
         if(!validateDat($dat)) {
             echo "<h1 color=\"red\">Attamped to load an invalid DAT. Check for errors and fix them.</h1>";
             return 0;
         }
         
+        // an output directory should always exist
         if(!file_exists("./output/"))
             die("<h1 color=\"red\">Output directory does not exist.<h1>");
         
-        $exportName = "./output/$shortListName.xml";
+        $exportName = "./output/$shortListName.xml"; // the location of the exported software list
         
+        // attempt to open the new exported file
         $export = fopen($exportName, "w") or die("<h1 color=\"red\">Error creating output file. Do you have the right directory permissions set?</h1>");
         
         $longListName = str_replace("&", "&amp;", $longListName);
@@ -888,7 +913,7 @@
                                         $nextElement = 1;
                                     }
                                     else if(substr($element, 0, 2) != "a " && sscanf($element, "a%d %s", $altNum, $altinfo) == 2) {
-                                        $badinfo = substr($element, strpos($element, " ") + 1);
+                                        $altinfo = substr($element, strpos($element, " ") + 1);
                                         $altdump = "Alt $altNum $altinfo";
                                         $nextElement = 1;
                                     }
@@ -924,6 +949,7 @@
                     $description = rtrim($description, " ");
                     
                     $description2 = " (";
+                    $partDescription = "";
 
                     if($system != "")
                         $description2 = $description2 . "$system, ";
@@ -952,63 +978,124 @@
                     if($devstatus != "")
                         $description2 = $description2 . "$devstatus, ";
 
-                    $partDescription = "";
+                    if($mediatype != "") {
+                        if($mergeLevel == 0)
+                            $description2 = $description2 . "$mediatype, ";
+                        else
+                            $partDescription = $partDescription . "$mediatype, ";
+                    }
 
-                    if($mediatype != "")
-                        $partDescription = $partDescription . "$mediatype, ";
-
-                    if($medialabel != "")
-                        $partDescription = $partDescription . "$medialabel, ";
+                    if($medialabel != "") {
+                        if($mergeLevel == 0)
+                            $description2 = $description2 . "$medialabel, ";
+                        else
+                            $partDescription = $partDescription . "$medialabel, ";
+                    }
                     
-                    if($cracked != "")
-                        $partDescription = $partDescription . "$cracked, ";
+                    if($cracked != "") {
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$cracked, ";
+                        else
+                            $partDescription = $partDescription . "$cracked, ";
+                    }
 
-                    if($fixed != "")
-                        $partDescription = $partDescription . "$fixed, ";
+                    if($fixed != "") {
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$fixed, ";
+                        else
+                            $partDescription = $partDescription . "$fixed, ";
+                    }
 
-                    if($hacked != "")
-                        $partDescription = $partDescription . "$hacked, ";
+                    if($hacked != "") {
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$hacked, ";
+                        else
+                            $partDescription = $partDescription . "$hacked, ";
+                    }
 
-                    if($modified != "")
-                        $partDescription = $partDescription . "$modified, ";
+                    if($modified != "") {
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$modified, ";
+                        else
+                            $partDescription = $partDescription . "$modified, ";
+                    }
 
-                    if($pirated != "")
-                        $partDescription = $partDescription . "$pirated, ";
+                    if($pirated != "") {
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$pirated, ";
+                        else
+                            $partDescription = $partDescription . "$pirated, ";
+                    }
 
-                    if($trained != "")
-                        $partDescription = $partDescription . "$trained, ";
+                    if($trained != "") {
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$trained, ";
+                        else
+                            $partDescription = $partDescription . "$trained, ";
+                    }
 
-                    if($translated != "")
-                        $partDescription = $partDescription . "$translated, ";
+                    if($translated != "") {
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$translated, ";
+                        else
+                            $partDescription = $partDescription . "$translated, ";
+                    }
 
                     if($overdump != "") {
-                        $partDescription = $partDescription . "$overdump, ";
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$overdump, ";
+                        else
+                            $partDescription = $partDescription . "$overdump, ";
+                        
                         $is_bad = 1;
                     }
 
                     if($underdump != "") {
-                        $partDescription = $partDescription . "$underdump, ";
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$underdump, ";
+                        else
+                            $partDescription = $partDescription . "$underdump, ";
+                        
                         $is_bad = 1;
                     }
 
                     if($virus != "") {
-                        $partDescription = $partDescription . "$virus, ";
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$virus, ";
+                        else
+                            $partDescription = $partDescription . "$virus, ";
+                        
                         $is_bad = 1;
                     }
 
                     if($baddump != "") {
-                        $partDescription = $partDescription . "$baddump, ";
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$baddump, ";
+                        else
+                            $partDescription = $partDescription . "$baddump, ";
+                        
                         $is_bad = 1;
                     }
 
-                    if($altdump != "")
-                        $partDescription = $partDescription . "$altdump, ";
+                    if($altdump != "") {
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$altdump, ";
+                        else
+                            $partDescription = $partDescription . "$altdump, ";
+                    }
 
-                    if($verified != "")
-                        $partDescription = $partDescription . "$verified, ";
+                    if($verified != "") {
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$verified, ";
+                        else
+                            $partDescription = $partDescription . "$verified, ";
+                    }
 
                     foreach($moreinfo as $info) {
-                        $partDescription = $partDescription . "$info, ";
+                        if($mergeLevel < 2)
+                            $description2 = $description2 . "$info, ";
+                        else
+                            $partDescription = $partDescription . "$info, ";
                     }
 
                     $description2 = $description2 . ")";
@@ -1094,7 +1181,7 @@
                         $curPart = $setParts[$descriptionKey]
                         . "\t\t<part name=\"$part" . $curPartNum . "\" interface=\"$interface\">\n";
                         
-                        if($partDescription != "")
+                        if($mergeLevel > 0 && $partDescription != "")
                             $curPart = $curPart . "\t\t\t<feature name=\"part_id\" value=\"$partDescription\"/>\n";
                         
                         $curPart = $curPart . "\t\t\t<dataarea name=\"$part\" size=\"$size\">\n"
@@ -1120,7 +1207,7 @@
                         
                         $curPart = "\t\t<description>$fullDescription</description>\n" . "\t\t<year>$shortdate</year>\n" . "\t\t<publisher>$publisher</publisher>\n\n" . "\t\t<part name=\"$part" . "1" . "\" interface=\"$interface\">\n";
                         
-                        if($partDescription != "")
+                        if($mergeLevel > 0 && $partDescription != "")
                             $curPart = $curPart . "\t\t\t<feature name=\"part_id\" value=\"$partDescription\"/>\n";
                         
                         $curPart = $curPart .  "\t\t\t<dataarea name=\"$part\" size=\"$size\">\n"
