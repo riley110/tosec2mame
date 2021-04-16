@@ -1,6 +1,6 @@
 <?php
     function restricted_files() {
-        return array(".", "..", ".DS_Store", ".htaccess");
+        return array(".", "..", ".DS_Store", "info.txt");
     }
     
     function dats_dir() {
