@@ -1,2 +1,2 @@
 # tosec2mame
-TOSEC DAT to MAME Software List Translator
+TOSEC DAT to MAME Software List Translator (alpha)
