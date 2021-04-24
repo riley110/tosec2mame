@@ -220,6 +220,15 @@
         return array("A", "a", "An", "Da", "Das", "De", "de", "Den", "Der", "Des", "Det", "Die", "Een", "El", "En", "Gli", "Het", "Il", "L", "La", "Las", "Le", "Les", "Lo", "Los", "L'", "Nel", "The", "the", "Une", "Uno");
     }
     
+    function moreInfoMedia($moreInfo) {
+        $partIds = array("FD-HD", "HD", "WB");
+        
+        if(in_array($moreInfo, $partIds))
+            return 1;
+        
+        return 0;
+    }
+    
     function validateDat($dat) {
         $setsRead = 0;
         $headerRead = 0;
@@ -381,6 +390,9 @@
         $shortnames = array();
         $setParts = array();
         $setPartNums = array();
+        $dupDescNums = array();
+        $parents = array();
+        $cloneNums = array();
 
         foreach($dat->children() as $game) {
             if(!$headerRead) {
@@ -657,7 +669,7 @@
                                     $crackNum = -1;
 
                                     if($element == "cr") {
-                                        $cracked = "Cracked";
+                                        $cracked = "Cracked 1";
                                         $nextElement = 1;
                                     }
                                     else if(substr($element, 0, 3) != "cr " && sscanf($element, "cr%d %s", $crackNum, $cracker) == 2) {
@@ -681,7 +693,7 @@
                                     $fixNum = -1;
 
                                     if($element == "f") {
-                                        $fixed = "Fixed";
+                                        $fixed = "Fixed 1";
                                         $nextElement = 1;
                                     }
                                     else if(substr($element, 0, 2) != "f " && sscanf($element, "f%d %s", $fixNum, $fixinfo) == 2) {
@@ -705,7 +717,7 @@
                                     $hackNum = -1;
 
                                     if($element == "h") {
-                                        $hacked = "Hacked";
+                                        $hacked = "Hacked 1";
                                         $nextElement = 1;
                                     }
                                     else if(substr($element, 0, 2) != "h " && sscanf($element, "h%d %s", $hackNum, $hackinfo) == 2) {
@@ -729,7 +741,7 @@
                                     $modNum = -1;
 
                                     if($element == "m") {
-                                        $modified = "Modified";
+                                        $modified = "Modified 1";
                                         $nextElement = 1;
                                     }
                                     else if(substr($element, 0, 2) != "m " && sscanf($element, "m%d %s", $modNum, $modInfo) == 2) {
@@ -753,7 +765,7 @@
                                     $pirateNum = -1;
 
                                     if($element == "p") {
-                                        $pirated = "Pirated";
+                                        $pirated = "Pirated 1";
                                         $nextElement = 1;
                                     }
                                     else if(substr($element, 0, 2) != "p " && sscanf($element, "p%d %s", $pirateNum, $pirate) == 2) {
@@ -778,7 +790,7 @@
                                     $trainerNum = -1;
 
                                     if($element == "t") {
-                                        $trained = "Trained";
+                                        $trained = "Trained 1";
                                         $nextElement = 1;
                                     }
                                     else if(substr($element, 0, 2) != "t " && sscanf($element, "t%d +%d %s", $trainerNum, $cheats, $trainer) == 3) {
@@ -801,6 +813,10 @@
                                         $trained = "Trained $trainerNum";
                                         $nextElement = 1;
                                     }
+                                    else if(substr($element, 0, 2) == "t " && sscanf($element, "t +%d", $cheats) == 1) {
+                                        $trained = "Trained +$cheats";
+                                        $nextElement = 1;
+                                    }
                                     else if(substr($element, 0, 2) == "t " && sscanf($element, "t %s", $trainer) == 1) {
                                         $trained = "Trained by $trainer";
                                         $nextElement = 1;
@@ -812,7 +828,7 @@
                                     $translateNum = -1;
 
                                     if($element == "tr") {
-                                        $translated = "Translated";
+                                        $translated = "Translated 1";
                                         $nextElement = 1;
                                     }
                                     else if(substr($element, 0, 3) != "tr " && sscanf($element, "tr%d %s", $translateNum, $translateInfo) == 2) {
@@ -835,7 +851,7 @@
                                     $overNum = -1;
 
                                     if($element == "o") {
-                                        $overdump = "Overdumped";
+                                        $overdump = "Overdumped 1";
                                         $nextElement = 1;
                                     }
                                     else if(sscanf($element, "o%d", $overNum) == 1) {
@@ -848,7 +864,7 @@
                                     $underNum = -1;
 
                                     if($element == "u") {
-                                        $underdump = "Underdumped";
+                                        $underdump = "Underdumped 1";
                                         $nextElement = 1;
                                     }
                                     else if(sscanf($element, "u%d", $underNum) == 1) {
@@ -862,7 +878,7 @@
                                     $virusNum = -1;
 
                                     if($element == "v") {
-                                        $virus = "Virus";
+                                        $virus = "Virus 1";
                                         $nextElement = 1;
                                     }
                                     else if(substr($element, 0, 2) != "v " && sscanf($element, "v%d %s", $virusNum, $virusinfo) == 2) {
@@ -885,7 +901,7 @@
                                     $badNum = -1;
 
                                     if($element == "b") {
-                                        $baddump = "Bad";
+                                        $baddump = "Bad 1";
                                         $nextElement = 1;
                                     }
                                     else if(substr($element, 0, 2) != "b " && sscanf($element, "b%d %s", $badNum, $badinfo) == 2) {
@@ -909,7 +925,7 @@
                                     $altNum = -1;
 
                                     if($element == "a") {
-                                        $altdump = "Alt";
+                                        $altdump = "Alt 1";
                                         $nextElement = 1;
                                     }
                                     else if(substr($element, 0, 2) != "a " && sscanf($element, "a%d %s", $altNum, $altinfo) == 2) {
@@ -948,172 +964,149 @@
 
                     $description = rtrim($description, " ");
                     
-                    $description2 = " (";
-                    $partDescription = "";
+                    $softwareInfo = "";
+                    $mediaInfo = "";
+                    $dumpInfo = "";
+                    $moreInfo = "";
 
                     if($system != "")
-                        $description2 = $description2 . "$system, ";
+                        $softwareInfo = $softwareInfo . "$system, ";
 
                     if($video != "")
-                        $description2 = $description2 . "$video, ";
+                        $softwareInfo = $softwareInfo . "$video, ";
 
                     if($country != "")
-                        $description2 = $description2 . "$country, ";
+                        $softwareInfo = $softwareInfo . "$country, ";
 
                     if($language != "")
-                        $description2 = $description2 . "$language, ";
+                        $softwareInfo = $softwareInfo . "$language, ";
 
                     if($demo != "")
-                        $description2 = $description2 . "$demo, ";
+                        $softwareInfo = $softwareInfo . "$demo, ";
 
                     if($version != "")
-                        $description2 = $description2 . "$version, ";
+                        $softwareInfo = $softwareInfo . "$version, ";
 
                     if($fulldate != "")
-                        $description2 = $description2 . "$fulldate, ";
+                        $softwareInfo = $softwareInfo . "$fulldate, ";
 
                     if($copyright != "")
-                        $description2 = $description2 . "$copyright, ";
+                        $softwareInfo = $softwareInfo . "$copyright, ";
 
                     if($devstatus != "")
-                        $description2 = $description2 . "$devstatus, ";
+                        $softwareInfo = $softwareInfo . "$devstatus, ";
 
                     if($mediatype != "") {
-                        if($mergeLevel == 0)
-                            $description2 = $description2 . "$mediatype, ";
-                        else
-                            $partDescription = $partDescription . "$mediatype, ";
+                        $mediaInfo = $mediaInfo . "$mediatype, ";
                     }
 
                     if($medialabel != "") {
-                        if($mergeLevel == 0)
-                            $description2 = $description2 . "$medialabel, ";
-                        else
-                            $partDescription = $partDescription . "$medialabel, ";
+                        $mediaInfo = $mediaInfo . "$medialabel, ";
                     }
                     
                     if($cracked != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$cracked, ";
-                        else
-                            $partDescription = $partDescription . "$cracked, ";
+                        $dumpInfo = $dumpInfo . "$cracked, ";
                     }
 
                     if($fixed != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$fixed, ";
-                        else
-                            $partDescription = $partDescription . "$fixed, ";
+                        $dumpInfo = $dumpInfo . "$fixed, ";
                     }
 
                     if($hacked != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$hacked, ";
-                        else
-                            $partDescription = $partDescription . "$hacked, ";
+                        $dumpInfo = $dumpInfo . "$hacked, ";
                     }
 
                     if($modified != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$modified, ";
-                        else
-                            $partDescription = $partDescription . "$modified, ";
+                        $dumpInfo = $dumpInfo . "$modified, ";
                     }
 
                     if($pirated != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$pirated, ";
-                        else
-                            $partDescription = $partDescription . "$pirated, ";
+                        $dumpInfo = $dumpInfo . "$pirated, ";
                     }
 
                     if($trained != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$trained, ";
-                        else
-                            $partDescription = $partDescription . "$trained, ";
+                        $dumpInfo = $dumpInfo . "$trained, ";
                     }
 
                     if($translated != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$translated, ";
-                        else
-                            $partDescription = $partDescription . "$translated, ";
+                        $dumpInfo = $dumpInfo . "$translated, ";
                     }
 
                     if($overdump != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$overdump, ";
-                        else
-                            $partDescription = $partDescription . "$overdump, ";
+                        $dumpInfo = $dumpInfo . "$overdump, ";
                         
                         $is_bad = 1;
                     }
 
                     if($underdump != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$underdump, ";
-                        else
-                            $partDescription = $partDescription . "$underdump, ";
+                        $dumpInfo = $dumpInfo . "$underdump, ";
                         
                         $is_bad = 1;
                     }
 
                     if($virus != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$virus, ";
-                        else
-                            $partDescription = $partDescription . "$virus, ";
+                        $dumpInfo = $dumpInfo . "$virus, ";
                         
                         $is_bad = 1;
                     }
 
                     if($baddump != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$baddump, ";
-                        else
-                            $partDescription = $partDescription . "$baddump, ";
+                        $dumpInfo = $dumpInfo . "$baddump, ";
                         
                         $is_bad = 1;
                     }
 
                     if($altdump != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$altdump, ";
-                        else
-                            $partDescription = $partDescription . "$altdump, ";
+                        $dumpInfo = $dumpInfo . "$altdump, ";
                     }
 
                     if($verified != "") {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$verified, ";
-                        else
-                            $partDescription = $partDescription . "$verified, ";
+                        $dumpInfo = $dumpInfo . "$verified, ";
                     }
 
                     foreach($moreinfo as $info) {
-                        if($mergeLevel < 2)
-                            $description2 = $description2 . "$info, ";
+                        if(moreInfoMedia($info))
+                            $mediaInfo = $mediaInfo . "$info, ";
                         else
-                            $partDescription = $partDescription . "$info, ";
+                            $moreInfo = $moreInfo . "$info, ";
                     }
-
-                    $description2 = $description2 . ")";
-                    $description2 = str_replace(", )", ")", $description2);
-
-                    $partDescription = trim($partDescription, ", ");
-
-                    if($description2 != " ()")
-                        $fullDescription = $description . $description2;
+                    
+                    $description2 = "($softwareInfo";
+                    $partDescription = "";
+                    
+                    if($mergeLevel == 0)
+                        $description2 = $description2 . $mediaInfo;
                     else
+                        $partDescription = $mediaInfo;
+                    
+                    if($mergeLevel < 2)
+                        $description2 = $description2 . $moreInfo . $dumpInfo;
+                    else
+                        $partDescription = $partDescription . $moreInfo . $dumpInfo;
+                    
+                    $description2 = chop($description2, ", ") . ")";
+
+                    $partDescription = chop($partDescription, ", ");
+
+                    if($description2 == "()") {
+                        $description2 = " ";
                         $fullDescription = $description;
+                    }
+                    else
+                        $fullDescription = "$description $description2";
                     }
             }
             else {
-                if($isUnknown)
-                    $fullDescription = "Unknown file \"" . ltrim($gamedescription, "ZZZ-UNK-") . "\"";
-                else if($isCompilation)
-                    $fullDescription = $gamedescription . " (compilation)";
+                if($isUnknown) {
+                    $description = "Unknown file \"" . ltrim($gamedescription, "ZZZ-UNK-") . "\"";
+                    $description2 = " ";
+                    $fullDescription = $description;
+                }
+                else if($isCompilation) {
+                    $description = $gamedescription . " (compilation)";
+                    $description2 = " ";
+                    $fullDescription = $description;
+                }
                 
                 $shortdate = "????";
                 $publisher = "&lt;unknown&gt;";
@@ -1121,7 +1114,7 @@
                 $partDescription = "";
             }
             
-            $descriptionKey = "$fullDescription\\$shortdate\\$publisher";
+            $descriptionKey = "$description\\$description2\\$shortdate\\$publisher";
         
             if($is_bad == 1)
                 $badStr = " status=\"baddump\"";
@@ -1178,8 +1171,7 @@
                     if(array_key_exists($descriptionKey, $setParts)) {
                         $curPartNum = $setPartNums[$descriptionKey] + 1;
 
-                        $curPart = $setParts[$descriptionKey]
-                        . "\t\t<part name=\"$part" . $curPartNum . "\" interface=\"$interface\">\n";
+                        $curPart = "";
                         
                         if($mergeLevel > 0 && $partDescription != "")
                             $curPart = $curPart . "\t\t\t<feature name=\"part_id\" value=\"$partDescription\"/>\n";
@@ -1189,23 +1181,21 @@
                         . "\t\t\t</dataarea>\n"
                         . "\t\t</part>\n";
 
-                        $setParts[$descriptionKey] = $curPart;
+                        array_push($setParts[$descriptionKey], $curPart);
                         $setPartNums[$descriptionKey]++;
                     }
                     else {
                         if(array_key_exists($fullDescription, $descriptions)) {
                             $dupDescNum = $descriptions[$fullDescription];
-                            $dupDescNumStr = " ($dupDescNum)";
+                            $dupDescNums[$descriptionKey] = $dupDescNum;
 
                             $descriptions[$fullDescription]++;
-
-                            $fullDescription = $fullDescription . $dupDescNumStr;
                         }
                         else {
                             $descriptions[$fullDescription] = 1;
                         }
                         
-                        $curPart = "\t\t<description>$fullDescription</description>\n" . "\t\t<year>$shortdate</year>\n" . "\t\t<publisher>$publisher</publisher>\n\n" . "\t\t<part name=\"$part" . "1" . "\" interface=\"$interface\">\n";
+                        $curPart = "";
                         
                         if($mergeLevel > 0 && $partDescription != "")
                             $curPart = $curPart . "\t\t\t<feature name=\"part_id\" value=\"$partDescription\"/>\n";
@@ -1215,50 +1205,107 @@
                         . "\t\t\t</dataarea>\n"
                         . "\t\t</part>\n";
 
-                        $setParts[$descriptionKey] = $curPart;
+                        $setParts[$descriptionKey] = array($curPart);
                         $setPartNums[$descriptionKey] = 1;
                     }
                 }
             }
         }
 
+        ksort($setParts);
+
         foreach(array_keys($setParts) as $curDescKey) {
             $curDescription = strtok($curDescKey, "\\");
+            $curDescription2 = strtok("\\");
+            $curYear = strtok("\\");
+            $curPublisher = strtok("\\");
+            
+            $curDescKeyShort = "$curDescription\\$curPublisher";
+            
+            if($curDescription2 == " ")
+                $curFullDescription = $curDescription;
+            else
+                $curFullDescription = "$curDescription $curDescription2";
             
             $tempShortName = "";
+            $parentShortName = "";
+            $shortName = "";
             
-            if(strpos($curDescription, "("))
-                $descriptionChars = str_split(strtolower(str_replace("&amp;", "", substr($curDescription, 0, strpos($curDescription, "(")))));
-            else
-                $descriptionChars = str_split(strtolower(str_replace("&amp;", "", $curDescription)));
+            $isClone = 0;
+            
+            if(array_key_exists($curDescKey, $dupDescNums))
+                $curFullDescription = "$curFullDescription (" . $dupDescNums[$curDescKey] . ")";
 
-            foreach($descriptionChars as $curDescChar) {
-                if(strlen($tempShortName) == 8)
-                    break;
-
-                if(validShortNameChar($curDescChar)) {
-                    $tempShortName = $tempShortName . $curDescChar;
+            if(array_key_exists($curDescKeyShort, $parents)) {
+                $isClone = 1;
+                
+                $parentShortName = $parents[$curDescKeyShort];
+                
+                if(array_key_exists($curDescKeyShort, $cloneNums)) {
+                    $cloneNums[$curDescKeyShort]++;
+                }
+                else {
+                    $cloneNums[$curDescKeyShort] = 1;
+                }
+                
+                $cloneChrOffset = ($cloneNums[$curDescKeyShort] - 1);
+                
+                if($cloneChrOffset > 25) {
+                    $shortName = $parentShortName . "_" . chr(97 + ((int)($cloneChrOffset / 26) - 1)) . chr(97 + ($cloneChrOffset % 26));
+                }
+                else {
+                    $shortName = $parentShortName . "_" . chr(97 + $cloneChrOffset);
                 }
             }
+            else {
+                $descriptionChars = str_split(strtolower(str_replace("&amp;", "", $curDescription)));
 
-            if($tempShortName == "") {
-                $tempShortName = "_unk";
+                foreach($descriptionChars as $curDescChar) {
+                    if(strlen($tempShortName) == 8)
+                        break;
+
+                    if(validShortNameChar($curDescChar)) {
+                        $tempShortName = $tempShortName . $curDescChar;
+                    }
+                }
+
+                if($tempShortName == "") {
+                    $tempShortName = "_unk";
+                }
+                
+                if(array_key_exists($tempShortName, $shortnames)) {
+                    $dupShortNum = $shortnames[$tempShortName];
+                    $shortnames[$tempShortName]++;
+                    $tempShortName = $tempShortName . "_$dupShortNum";
+                }
+                else {
+                    $shortnames[$tempShortName] = 1;
+                }
+                
+                $shortName = $tempShortName;
+                $parents[$curDescKeyShort] = $shortName;
             }
             
-            if(array_key_exists($tempShortName, $shortnames)) {
-                $dupShortNum = $shortnames[$tempShortName];
-                $shortName = $tempShortName . "_$dupShortNum";
-
-                $shortnames[$tempShortName]++;
+            fwrite($export, "\t<software name=\"$shortName\"");
+            
+            if($isClone)
+                fwrite($export, " cloneof=\"$parentShortName\"");
+            
+            fwrite($export, " supported=\"no\">\n");
+            fwrite($export, "\t\t<description>$curFullDescription</description>\n" . "\t\t<year>$curYear</year>\n" . "\t\t<publisher>$curPublisher</publisher>\n\n");
+            
+            $curSetParts = $setParts[$curDescKey];
+            sort($curSetParts);
+            
+            $curSetPartNum = 1;
+            
+            foreach($curSetParts as $curSetPart) {
+                fwrite($export, "\t\t<part name=\"$part$curSetPartNum\" interface=\"$interface\">\n");
+                fwrite($export, $curSetPart);
+                
+                $curSetPartNum++;
             }
-            else {
-                $shortName = $tempShortName;
-
-                $shortnames[$tempShortName] = 1;
-            }
-
-            fwrite($export, "\t<software name=\"$shortName\" supported=\"no\">\n");
-            fwrite($export, $setParts[$curDescKey]);
+            
             fwrite($export, "\t</software>\n\n");
         }
 
