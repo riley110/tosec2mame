@@ -22,8 +22,8 @@ Interface Name: The storage device that the software should be mounted to.
 Alternatively, there is a autogen.php script which generates several examples of software lists which are uploaded to my MAME fork below. Please ensure that the latest TOSEC DAT pack is uploaded before running this. I will update this script with each TOSEC update.
 
 Special Thanks:
-TOSEC (tosecdev.org)
-MAME (mamedev.org / https://github.com/mamedev)
+TOSEC (https://tosecdev.org)
+MAME (https://mamedev.org / https://github.com/mamedev)
 
 Lastly, my MAME fork containing the aformentioned software lists is available at:
 https://github.com/riley110/mame
