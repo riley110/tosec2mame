@@ -13,19 +13,22 @@ After downloading this repo:
 4. Ensure that directory permissions are set such that the server can read input XML files and can write converted software lists to the “output” folder.
 
 Configurable options:
-Select TOSEC List: Select a TOSEC DAT file based on the contents of the “dats” directory.
-Short List Name: The filename of the output MAME Software List. This is also used to determine the folder used to retrieve software in the specific list by MAME.
-Long List Name: The more user-friendly name of the software list as displayed while using MAME.
-Part Name: The prefix of the specific parts of each software set - a number is appended to this to fully separate them.
-Interface Name: The storage device that the software should be mounted to.
+- Select TOSEC List: Select a TOSEC DAT file based on the contents of the “dats” directory.
+- Short List Name: The filename of the output MAME Software List. This is also used to determine the folder used to retrieve software in the specific list by MAME.
+- Long List Name: The more user-friendly name of the software list as displayed while using MAME.
+- Part Name: The prefix of the specific parts of each software set - a number is appended to this to fully separate them.
+- Interface Name: The storage device that the software should be mounted to.
+- Merge Level: Type of set merging to use:
+  - Full Split: Each dump gets its own set. All information is included in the main description fields.
+  - Split-Merge: Dumps with matching software info and dump flags are merged. Software info is included in the main description fields, while media info and dump flags are included in specific part information fields.
+  - Full Merge: Dumps with matching software info are merged, even if dump flags do not match. Software info is included in the main description field, while media info and dump flags are included in specific part information fields.
 
 Alternatively, there is a autogen.php script which generates several examples of software lists which are uploaded to my MAME fork below. Please ensure that the latest TOSEC DAT pack is uploaded before running this. I will update this script with each TOSEC update.
 
 Special Thanks:
-TOSEC (https://tosecdev.org)
-MAME (https://mamedev.org / https://github.com/mamedev)
+- TOSEC (https://tosecdev.org)
+- MAME (https://mamedev.org / https://github.com/mamedev)
 
-Lastly, my MAME fork containing the aformentioned software lists is available at:
-https://github.com/riley110/mame
+Lastly, my MAME fork containing the aformentioned software lists is available at https://github.com/riley110/mame.
 
 Thank you and good luck.
